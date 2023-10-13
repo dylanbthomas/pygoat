@@ -72,3 +72,9 @@ jobs:
       - name: Check Files #2
         run: ls -la
 
+      - name: Archive ScanCentral package
+        uses: actions/upload-artifact@v3
+        with:
+          name: scancentral-package
+          path: '*.package.zip'
+          retention-days: 1
