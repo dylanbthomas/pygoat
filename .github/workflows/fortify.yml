@@ -48,7 +48,11 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 11
-          distribution: 'temurin'          
+          distribution: 'temurin'
+
+      # Identify open source components for Debricked scan
+      - uses: debricked/actions/cache@v3
+      - uses: debricked/actions/resolve-non-docker@v3
       
       # Prepare source+dependencies for upload. 
       - name: Download Fortify ScanCentral Client
