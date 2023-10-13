@@ -38,10 +38,10 @@ jobs:
       - name: Check Out Source Code
         uses: actions/checkout@v3
         
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
+      #- name: Set up Python 3.8
+      #  uses: actions/setup-python@v4
+      #  with:
+      #    python-version: 3.8
       
       # Java is required to run the various Fortify utilities.
       - name: Setup Java
@@ -54,7 +54,7 @@ jobs:
       - uses: debricked/actions/cache@v3
       - uses: debricked/actions/resolve-non-docker@v3
 
-      - name: Archive code coverage results
+      - name: Archive Debricked lock file
         uses: actions/upload-artifact@v3
         with:
           name: debricked-lock-file
