@@ -76,5 +76,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: scancentral-package
-          path: '*.package.zip'
+          path: package.zip
           retention-days: 1
