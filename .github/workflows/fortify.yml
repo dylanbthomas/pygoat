@@ -53,6 +53,12 @@ jobs:
       # Identify open source components for Debricked scan
       - uses: debricked/actions/cache@v3
       - uses: debricked/actions/resolve-non-docker@v3
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: debricked-lock-file
+          path: '*.debricked.lock'
       
       # Prepare source+dependencies for upload. 
       - name: Download Fortify ScanCentral Client
