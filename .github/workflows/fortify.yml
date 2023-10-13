@@ -67,7 +67,8 @@ jobs:
       - name: Download Fortify ScanCentral Client
         uses: fortify/gha-setup-scancentral-client@v2
       - name: Package Code + Dependencies
-        run: scancentral package -oss -pyr requirements.txt -o package.zip
+        #run: scancentral package -oss -pyr requirements.txt -o package.zip
+        run: scancentral package -pyr requirements.txt -o package.zip
 
       - name: Check Files #2
         run: ls -la
