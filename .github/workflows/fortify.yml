@@ -71,6 +71,8 @@ jobs:
         with:
           args: unzip -qq package.zip -d package
 
+      - run: chmod 777 package ./package
+
       - name: Copy Debricked lock file
         run: cp .requirements.txt.pip.debricked.lock ./package
 
