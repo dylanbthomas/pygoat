@@ -54,12 +54,6 @@ jobs:
       - uses: debricked/actions/cache@v3
       - uses: debricked/actions/resolve-non-docker@v3
 
-      - name: Archive Debricked lock file
-        uses: actions/upload-artifact@v3
-        with:
-          name: debricked-lock-file
-          path: '*.debricked.lock'
-
       - name: Check Files #1
         run: ls -la
       
@@ -67,15 +61,27 @@ jobs:
       - name: Download Fortify ScanCentral Client
         uses: fortify/gha-setup-scancentral-client@v2
       - name: Package Code + Dependencies
-        #run: scancentral package -oss -pyr requirements.txt -o package.zip
-        run: scancentral package -o package.zip
+        run: scancentral package -oss -pyr requirements.txt -o package.zip
 
       - name: Check Files #2
         run: ls -la
+
+      - name: Unzip ScanCentral Package
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq pacakge.zip -d package
+
+      - name: Copy Debricked lock file
+        run: cp .requirements.txt.pip.debricked.lock ./package
+
+      - name: Zip ScanCentral Package
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r pacakge1.zip package
 
       - name: Archive ScanCentral package
         uses: actions/upload-artifact@v3
         with:
           name: scancentral-package
-          path: package.zip
+          path: package1.zip
           retention-days: 1
