@@ -27,6 +27,11 @@ on:
   
 jobs:
   FoD-SAST-Scan:
+    strategy:
+      fail-fast: false
+      # Prevent running multiple FoD scans on same release simultaneously
+      max-parallel: 1
+    
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -34,65 +39,26 @@ jobs:
       security-events: write
 
     steps:
-      # Check out source code
       - name: Check Out Source Code
         uses: actions/checkout@v3
         
-      #- name: Set up Python 3.8
-      #  uses: actions/setup-python@v4
-      #  with:
-      #    python-version: 3.8
-      
-      # Java is required to run the various Fortify utilities.
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
         with:
-          java-version: 11
-          distribution: 'temurin'
+          python-version: 3.8
 
-      # Identify open source components for Debricked scan
-      - uses: debricked/actions/cache@v3
-      - uses: debricked/actions/resolve-non-docker@v3
-
-      - name: Archive Debricked lock file
-        uses: actions/upload-artifact@v3
+      - name: Run FoD SAST scan
+        uses: fortify-ps/github-action@main
         with:
-          name: debricked-lock-file
-          path: '*.debricked.lock'
-      
-      # Prepare source+dependencies for upload. 
-      - name: Download Fortify ScanCentral Client
-        uses: fortify/gha-setup-scancentral-client@v2
-      - name: Package Code + Dependencies
-        run: scancentral package -oss -pyr requirements.txt -o package.zip
-
-      # Start Fortify on Demand SAST scan and wait until results complete. For more information on FoDUploader commands, see https://github.com/fod-dev/fod-uploader-java
-      - name: Download Fortify on Demand Universal CI Tool
-        uses: fortify/gha-setup-fod-uploader@v1
-      - name: Perform SAST Scan
-        run: java -jar $FOD_UPLOAD_JAR -z package.zip -aurl $FOD_API_URL -purl $FOD_URL -rid "$FOD_RELEASE_ID" -tc "$FOD_TENANT" -uc "$FOD_USER" "$FOD_PAT" $FOD_UPLOADER_OPTS -n "$FOD_UPLOADER_NOTES"
+          sast-scan: true
         env:
           FOD_URL: "https://ams.fortify.com/"
-          FOD_API_URL: "https://api.ams.fortify.com/"
-          FOD_TENANT: ${{ secrets.FOD_TENANT }}
-          FOD_USER: ${{ secrets.FOD_USER }}
-          FOD_PAT: ${{ secrets.FOD_PAT }}
-          FOD_RELEASE_ID: ${{ secrets.FOD_RELEASE_ID_2 }}
-          FOD_UPLOADER_OPTS: "-ep 2 -pp 0 -I 1 -apf"
-          FOD_UPLOADER_NOTES: 'Triggered by GitHub Actions (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
-
-      # Once scan completes, pull SAST issues from Fortify on Demand and generate SARIF output.
-      - name: Export results to GitHub-optimized SARIF
-        uses: fortify/gha-export-vulnerabilities@v1
-        with:
-          fod_base_url: "https://ams.fortify.com/"
-          fod_tenant: ${{ secrets.FOD_TENANT }}
-          fod_user: ${{ secrets.FOD_USER }}
-          fod_password: ${{ secrets.FOD_PAT }}
-          fod_release_id: ${{ secrets.FOD_RELEASE_ID_2 }}
-
-      # Import Fortify on Demand results to GitHub Security Code Scanning
-      - name: Import Results
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ./gh-fortify-sast.sarif
+          FOD_TENANT: ${{secrets.FOD_TENANT}}
+          FOD_USER: ${{secrets.FOD_USER}}
+          FOD_PASSWORD: ${{secrets.FOD_PAT}}
+          FOD_RELEASE: pygoat:New_GitHubAction_Demo
+          #FOD_RELEASE: ${{ secrets.FOD_RELEASE_ID_3 }}
+          EXTRA_PACKAGE_OPTS: "-pyr requirements.txt"
+          EXTRA_FOD_LOGIN_OPTS: --socket-timeout=60s
+          EXTRA_FOD_SAST_SCAN_OPTS: --notes 'Triggered by GitHub Actions (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+          DO_EXPORT: true
